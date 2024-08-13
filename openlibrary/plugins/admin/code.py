@@ -371,10 +371,7 @@ class sync_ia_ol(delegate.page):
         acct = accounts.OpenLibraryAccount.get(email=auth.get('username'))
         user = acct.get_user() if acct else None
 
-        if not user or (user and not user.is_usergroup_member('/usergroup/ia')):
-            return False
-
-        return True
+        return user and user.is_usergroup_member('/usergroup/ia')
 
     def validate_input(self, i):
         """Returns True if the request is valid.
@@ -903,13 +900,12 @@ class attach_debugger:
     def POST(self):
         import debugpy  # noqa: T100
 
-        i = web.input()
         # Allow other computers to attach to ptvsd at this IP address and port.
-        logger.info("Enabling debugger attachment")
-        debugpy.listen(address=('0.0.0.0', 3000))  # noqa: T100
-        logger.info("Waiting for debugger to attach...")
+        web.debug("Enabling debugger attachment")
+        debugpy.listen(('0.0.0.0', 3000))  # noqa: T100
+        web.debug("Waiting for debugger to attach...")
         debugpy.wait_for_client()  # noqa: T100
-        logger.info("Debugger attached to port 3000")
+        web.debug("Debugger attached to port 3000")
         add_flash_message("info", "Debugger attached!")
 
         return self.GET()
